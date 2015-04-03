@@ -4,13 +4,20 @@
 
     var pluginName = "gamepad";
     var self;
+    var $el = $("#gamepadPrompt");
+
+    var hasGP = false;
+    var repGP;
 
 
     // PLUGIN DEFAULTS
     // ===============================
 
     var defaults = {
-      foo: "bar"
+        prompt: "Connect your gamepad and press any button!",
+        checkInterval: 500,
+        pollingInterval: 100,
+        debugLog: true
     };
 
 
@@ -35,30 +42,15 @@
     Plugin.prototype._init = function() {
         var self = this;
         log("oh-base: init");
-
-        console.log("settings:");
         console.log(this.settings);
-
-        var hasGP = false;
-        var repGP;
 
         if(supportsGamepad()) {
 
-          var prompt = "To begin using your gamepad, connect it and press any button!";
-          $("#gamepadPrompt").text(prompt);
+          $el.text(self._defaults.prompt);
 
-          $(window).on("gamepadconnected", function() {
-            hasGP = true;
-            $("#gamepadPrompt").html("Gamepad connected!");
-            console.log("connection event");
-            repGP = window.setInterval(reportOnGamepad,100);
-          });
-
-          $(window).on("gamepaddisconnected", function() {
-            console.log("disconnection event");
-            $("#gamepadPrompt").text(prompt);
-            window.clearInterval(repGP);
-          });
+          // Attach gamepad connected/disconnected events
+          $(window).on("gamepadconnected", self._onGamepadConnected);
+          $(window).on("gamepaddisconnected", self._onGamepadDisconnected);
 
           //setup an interval for Chrome
           var checkGP = window.setInterval(function() {
@@ -69,6 +61,19 @@
             }
           }, 500);
         }
+    };
+
+    Plugin.prototype._onGamepadConnected = function(e) {
+        hasGP = true;
+        $el.html("Gamepad connected!");
+        console.log("connection event");
+        repGP = window.setInterval(reportOnGamepad, 100);
+    };
+
+    Plugin.prototype._onGamepadDisconnected = function(e) {
+        console.log("disconnection event");
+        $el.text(prompt);
+        window.clearInterval(repGP);
     };
 
 
@@ -90,7 +95,8 @@
     function reportOnGamepad() {
   		var gp = navigator.getGamepads()[0];
   		var html = "";
-  			html += "id: "+gp.id+"<br/>";
+          
+		html += "id: "+gp.id+"<br/>";
 
   		for(var i=0;i<gp.buttons.length;i++) {
   			html+= "Button "+(i+1)+": ";
