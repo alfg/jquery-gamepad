@@ -6,8 +6,8 @@
     var self;
     var $el = $("#gamepadPrompt");
 
-    var hasGP = false;
-    var repGP;
+    var hasGamepad = false;
+    var reportGamepad;
 
 
     // PLUGIN DEFAULTS
@@ -32,6 +32,15 @@
         log("updating...");
     };
 
+    /**
+     * Is Gamepad supported?
+     */
+    Plugin.prototype.supported = function() {
+        var self = this;
+        console.log('is supported?');
+        return 10;
+    };
+
 
     // PRIVATE METHODS
     // ===============================
@@ -53,27 +62,27 @@
           $(window).on("gamepaddisconnected", self._onGamepadDisconnected);
 
           //setup an interval for Chrome
-          var checkGP = window.setInterval(function() {
-            console.log('checkGP');
+          var checkGamepad = window.setInterval(function() {
+            console.log('checkGamepad');
             if(navigator.getGamepads()[0]) {
-              if(!hasGP) $(window).trigger("gamepadconnected");
-              window.clearInterval(checkGP);
+              if(!hasGamepad) $(window).trigger("gamepadconnected");
+              window.clearInterval(checkGamepad);
             }
           }, 500);
         }
     };
 
     Plugin.prototype._onGamepadConnected = function(e) {
-        hasGP = true;
+        hasGamepad = true;
         $el.html("Gamepad connected!");
         console.log("connection event");
-        repGP = window.setInterval(reportOnGamepad, 100);
+        reportGamepad = window.setInterval(reportOnGamepad, 100);
     };
 
     Plugin.prototype._onGamepadDisconnected = function(e) {
         console.log("disconnection event");
         $el.text(prompt);
-        window.clearInterval(repGP);
+        window.clearInterval(reportGamepad);
     };
 
 
@@ -95,7 +104,7 @@
     function reportOnGamepad() {
   		var gp = navigator.getGamepads()[0];
   		var html = "";
-          
+
 		html += "id: "+gp.id+"<br/>";
 
   		for(var i=0;i<gp.buttons.length;i++) {
@@ -163,5 +172,7 @@
             }
         });
     };
+
+    $.fn[pluginName].defaults = defaults;
 
 })( jQuery, window, document );
